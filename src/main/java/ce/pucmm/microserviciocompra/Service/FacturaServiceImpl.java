@@ -46,7 +46,7 @@ public class FacturaServiceImpl implements FacturaService {
     }
 
     public List<Factura> facturasPorCliente(int idcliente){
-        facturaRepository.facturasPorCliente(idcliente);
+        return facturaRepository.facturasPorCliente(idcliente);
     }
 
 //    public List<Factura> facturasPendientes() {
