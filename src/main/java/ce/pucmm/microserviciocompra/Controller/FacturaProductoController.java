@@ -23,10 +23,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.spi.LocaleServiceProvider;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:8080")
 @RequestMapping("/compras")
 public class FacturaProductoController {
 
@@ -40,59 +40,41 @@ public class FacturaProductoController {
     @Autowired
     RestTemplate restTemplate;
 
-    @GetMapping(value = "/")
-    public List<Factura> compras(Model model) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<String>(headers);
-        List<Cliente> clientes = restTemplate.exchange("http://localhost:8080/clientes/todos", HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<Cliente>>() {
-                }).getBody();
 
-        List<Cliente> clientesList = new ArrayList<>();
+    @GetMapping(value = "/total")
+    public int total(){
+        return facturaProductoService.buscarTodasFacturaProductos().size();
+    }
+
+    @GetMapping(value = "/totaldespachosefectuados")
+    public int totaldespachosefectuados(){
         List<Factura> facturas = facturaService.buscarTodasFacturas();
-
-        List<FacturaProducto> detallesFacturas = new ArrayList<>();
-
-        for (int i = 0; i < facturas.size(); i++){
-            for(int j = 0; j < clientes.size(); j++){
-                if(facturas.get(i).getCliente_id().equals(Integer.toString(clientes.get(j).getId()))){
-                    facturas.get(i).setCliente_id(clientes.get(j).getNombre());
-                }
-            }
+        int ans =0;
+        for(Factura f : facturas){
+            if(f.getCondicion().equals("Despachado"))ans++;
         }
+        return ans;
+    }
 
-        model.addAttribute("facturas", facturas);
-        model.addAttribute("detalles", detallesFacturas);
-        return facturas;
-
+    @GetMapping(value = "/totaldespachospendientes")
+    public int totaldespachospendientes(){
+        List<Factura> facturas = facturaService.buscarTodasFacturas();
+        int ans =0;
+        for(Factura f : facturas){
+            if(f.getCondicion().equals("Pendiente"))ans++;
+        }
+        return ans;
     }
 
 
     @RequestMapping("/todos")
     public List<Factura> verTodasLasFacturas() {
 
-//        Factura factura = new Factura();
-//        factura.setCliente_id("1");
-//        factura.setCondicion("Pendiente");
-//        factura.setTotal(100);
-//        factura.setFecha(LocalDate.now());
-//
-//        FacturaProducto facturaProducto = new FacturaProducto();
-//        facturaProducto.setSubtotal(100);
-//        facturaProducto.setCantidad(1);
-//        facturaProducto.setProducto_id("1");
-//        facturaProducto.setFactura_id("1");
-//
-//
-//        facturaService.crearFactura(factura);
-//        facturaProductoService.crearFacturaProducto(facturaProducto);
-
         return facturaService.buscarTodasFacturas();
     }
 
-    @PostMapping(value = "/despacho/")
-    public FacturaProducto despacho(@RequestParam("client") String idcliente, @RequestParam("cant[]") List<String> cantidades,
+    @PostMapping(value = "/entregar/")
+    public void despacho(@RequestParam("client") String idcliente, @RequestParam("cant[]") List<String> cantidades,
                            @RequestParam("ids[]") List<String> ids, @RequestParam("fecha") String fecha,
                            @RequestParam("condicion") String condicion, @RequestParam("total") String total) {
 
@@ -100,7 +82,7 @@ public class FacturaProductoController {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         HttpEntity<String> entity = new HttpEntity<String>(headers);
-        List<Producto> productos = restTemplate.exchange("http://localhost:8080/productos/todos", HttpMethod.GET, null,
+        List<Producto> productos = restTemplate.exchange("http://localhost:8082/productos/todos", HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<Producto>>() {
                 }).getBody();
 
@@ -138,7 +120,7 @@ public class FacturaProductoController {
         HttpHeaders headers2 = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         HttpEntity<String> entity2 = new HttpEntity<String>(headers2);
-        List<Usuario> usuariosAlmacen = restTemplate.exchange("http://localhost:8080/usuarios/usuariosalmacen",
+        List<Usuario> usuariosAlmacen = restTemplate.exchange("http://localhost:8083/usuarios/usuariosalmacen",
                 HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<Usuario>>() {
                 }).getBody();
@@ -161,24 +143,22 @@ public class FacturaProductoController {
             }
         }
 
-        return detalles;
     }
 
     @PostMapping(value = "/entrega/{id}")
-    public Factura entrega(@PathVariable("id") String id) {
+    public String entrega(@PathVariable("id") String id) {
 
         Factura factura = facturaService.buscarPorId(Long.parseLong(id));
         factura.setCondicion("Entregado");
         facturaService.actualizarFactura(factura);
-        return factura;
-
+        return "redirect:/compras/";
     }
 
     @GetMapping(value = "/entregado/{id}")
-    public Factura entregado(Model model, @PathVariable("id") String id) {
+    public String entregado(Model model, @PathVariable("id") String id) {
         Factura factura = facturaService.buscarPorId(Long.parseLong(id));
         model.addAttribute("factura", factura);
-        return factura;
+        return "factura";
     }
 
 

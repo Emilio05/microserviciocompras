@@ -32,5 +32,6 @@ dependencies {
     implementation('com.sparkpost:sparkpost-lib:0.21')
     compile group: 'org.json', name: 'json', version: '20180813'
     runtimeOnly('mysql:mysql-connector-java')
+    runtime('com.h2database:h2')
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
