@@ -92,7 +92,7 @@ public class FacturaProductoController {
     }
 
     @PostMapping(value = "/despacho/")
-    public String despacho(@RequestParam("client") String idcliente, @RequestParam("cant[]") List<String> cantidades,
+    public FacturaProducto despacho(@RequestParam("client") String idcliente, @RequestParam("cant[]") List<String> cantidades,
                            @RequestParam("ids[]") List<String> ids, @RequestParam("fecha") String fecha,
                            @RequestParam("condicion") String condicion, @RequestParam("total") String total) {
 
@@ -161,23 +161,24 @@ public class FacturaProductoController {
             }
         }
 
-        return "redirect:/compras/";
+        return detalles;
     }
 
     @PostMapping(value = "/entrega/{id}")
-    public String entrega(@PathVariable("id") String id) {
+    public Factura entrega(@PathVariable("id") String id) {
 
         Factura factura = facturaService.buscarPorId(Long.parseLong(id));
         factura.setCondicion("Entregado");
         facturaService.actualizarFactura(factura);
-        return "redirect:/compras/";
+        return factura;
+
     }
 
     @GetMapping(value = "/entregado/{id}")
-    public String entregado(Model model, @PathVariable("id") String id) {
+    public Factura entregado(Model model, @PathVariable("id") String id) {
         Factura factura = facturaService.buscarPorId(Long.parseLong(id));
         model.addAttribute("factura", factura);
-        return "factura";
+        return factura;
     }
 
 
