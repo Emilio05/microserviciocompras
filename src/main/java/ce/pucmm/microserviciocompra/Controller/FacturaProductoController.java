@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.spi.LocaleServiceProvider;
 
 @RestController
@@ -40,7 +41,7 @@ public class FacturaProductoController {
     RestTemplate restTemplate;
 
     @GetMapping(value = "/")
-    public String compras(Model model) {
+    public List<Factura> compras(Model model) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         HttpEntity<String> entity = new HttpEntity<String>(headers);
@@ -63,7 +64,7 @@ public class FacturaProductoController {
 
         model.addAttribute("facturas", facturas);
         model.addAttribute("detalles", detallesFacturas);
-        return "compras";
+        return facturas;
 
     }
 
